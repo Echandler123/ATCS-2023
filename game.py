@@ -1,76 +1,99 @@
 import pygame
-import sys
 import random
+import sys
+import os
 
 # Initialize Pygame
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 600, 600
+WIDTH, HEIGHT = 800, 600
 FPS = 60
 
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-
-# Player
-player_size = 40
-player_pos = [0, 0]
 
 # Classes
-class_positions = {
-    "Math": [random.randint(1, 8) * (WIDTH // 10), random.randint(1, 8) * (HEIGHT // 10)],
-    "History": [random.randint(1, 8) * (WIDTH // 10), random.randint(1, 8) * (HEIGHT // 10)],
-    "Science": [random.randint(1, 8) * (WIDTH // 10), random.randint(1, 8) * (HEIGHT // 10)],
-}
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((30, 30))
+        self.image.fill(BLACK)
+        self.rect = self.image.get_rect()
 
-# Initialize Pygame window
+class Classroom(pygame.sprite.Sprite):
+    def __init__(self, image_file, x, y):
+        super().__init__()
+        self.image = pygame.image.load(image_file)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+
+# Game initialization
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("School Maze Game")
 clock = pygame.time.Clock()
 
-# Main game loop
+all_sprites = pygame.sprite.Group()
+classrooms = pygame.sprite.Group()
+
+classroom_info = [
+    {"image": "math.jpg", "position": (50, 50)},
+    {"image": "history.jpg", "position": (200, 150)},
+    {"image": "science.jpg", "position": (400, 300)},
+]
+
+# Randomize the correct classroom
+correct_classroom = random.choice(classroom_info)
+
+# Create classrooms and player
+for info in classroom_info:
+    classroom = Classroom(info["image"], *info["position"])
+    classrooms.add(classroom)
+    all_sprites.add(classroom)
+
+player = Player()
+all_sprites.add(player)
+
+# Ensure the player does not spawn on a classroom
+while True:
+    player.rect.center = (random.randint(0, WIDTH - 30), random.randint(0, HEIGHT - 30))
+    collisions = pygame.sprite.spritecollide(player, classrooms, False)
+    if not collisions:
+        break
+
+# Game loop
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
 
+    # Player movement
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] and player_pos[1] > 0:
-        player_pos[1] -= player_size
-    if keys[pygame.K_DOWN] and player_pos[1] < HEIGHT - player_size:
-        player_pos[1] += player_size
-    if keys[pygame.K_LEFT] and player_pos[0] > 0:
-        player_pos[0] -= player_size
-    if keys[pygame.K_RIGHT] and player_pos[0] < WIDTH - player_size:
-        player_pos[0] += player_size
+    player_speed = 5
+    if keys[pygame.K_LEFT]:
+        player.rect.x -= player_speed
+    if keys[pygame.K_RIGHT]:
+        player.rect.x += player_speed
+    if keys[pygame.K_UP]:
+        player.rect.y -= player_speed
+    if keys[pygame.K_DOWN]:
+        player.rect.y += player_speed
 
-    # Check if the player has reached a class
-    for class_name, class_pos in class_positions.items():
-        if player_pos == class_pos:
-            print(f"You found your {class_name} class! Congratulations!")
-            running = False
+    # Check if the player is in the correct classroom
+    if player.rect.colliderect(classrooms.sprites()[classroom_info.index(correct_classroom)].rect):
+        print("Congratulations! You found the correct classroom.")
+        running = False
 
     # Draw everything
     screen.fill(WHITE)
-    for class_pos in class_positions.values():
-        pygame.draw.rect(screen, RED, (class_pos[0], class_pos[1], player_size, player_size))
-
-    pygame.draw.rect(screen, GREEN, (WIDTH - player_size, HEIGHT - player_size, player_size, player_size))
-
-    pygame.draw.rect(screen, BLACK, (player_pos[0], player_pos[1], player_size, player_size))
+    all_sprites.draw(screen)
 
     pygame.display.flip()
 
     # Cap the frame rate
     clock.tick(FPS)
 
-# Quit Pygame
 pygame.quit()
 sys.exit()
