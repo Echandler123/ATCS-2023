@@ -62,6 +62,9 @@ while True:
     if not collisions:
         break
 
+# Timer initialization
+start_time = pygame.time.get_ticks()
+
 # Game loop
 running = True
 while running:
@@ -83,7 +86,9 @@ while running:
 
     # Check if the player is in the correct classroom
     if player.rect.colliderect(classrooms.sprites()[classroom_info.index(correct_classroom)].rect):
-        print("Congratulations! You found the correct classroom.")
+        end_time = pygame.time.get_ticks()
+        elapsed_time = (end_time - start_time) / 1000  # Convert milliseconds to seconds
+        print(f"Congratulations! You found the correct classroom in {elapsed_time:.2f} seconds.")
         running = False
 
     # Draw everything
