@@ -10,7 +10,6 @@ class SchoolBotFSM(FSM):
         # Define states
         self.add_transition("moving_to_class", "moving_to_class", self.move_to_class, "moving_to_class")
         self.add_transition("found_correct_class", "moving_to_class", self.found_correct_class, "success")
-        self.add_transition("not_found_correct_class", "moving_to_class",self.not_found_correct_class, "idle")
         # Initialize School Bot position
         self.school_bot_position = (200, 400)
     def move_to_class(self):
