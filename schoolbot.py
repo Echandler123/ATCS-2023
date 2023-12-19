@@ -20,4 +20,4 @@ class SchoolBotFSM(FSM):
         self.school_bot_position = (max(0, min(self.width- 30, self.school_bot_position[0] + random_x)),
         max(0, min(self.height - 30, self.school_bot_position[1] + random_y)))
     def found_correct_class(self):
-        print("Found correct class! Congratulations!")     
+        print("The ai found correct class!")     
